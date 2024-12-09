@@ -4,8 +4,12 @@
 #include<vector>
 #include<unistd.h>
 #include<signal.h>
-#include<sys/types.h>
-#include<sys/wait.h>
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <sys/wait.h>
+#endif
+
 #include<cerrno>
 #include<stdlib.h>
 #include<cstdlib>
@@ -20,7 +24,7 @@ using namespace std;
 
 
 // create builtin commands
-vector<string> builtin_commands = {"cd"};
+vector<string> builtin_commands = {"cd", "clear"};
 
 // Function to read input from the user
 string read_input(){
@@ -55,7 +59,7 @@ vector<string>parse_input( string command){
 }
 
 void handle_cd(vector<string>tokens){
-    if(tokens[1].empty()){
+    if(tokens[1].empty() || tokens.size()<2){
         cerr<<"cd: missing argument"<<endl;
         exit(EXIT_FAILURE);
     }else if(chdir(tokens[1].c_str())!=0){
@@ -84,7 +88,7 @@ void execute(vector<string>tokens){
         
     }else if(pid<0){
         // fork failed
-        perror('fork');
+        perror("fork");
         exit(1);
      }else{
         do{
@@ -96,10 +100,12 @@ void handle_signal(int sigNUM){
     if(!sigint_flag){
        return;
     }
-     
-     siglongjmp(jmpbuf, 10);
+    siglongjmp(jmpbuf, 10);
 }
-
+void exit_shell(){
+     std::cout << "Exiting shell..." << std::endl;
+    exit(0);
+}
 int main(){
     // initialize
         
@@ -120,7 +126,7 @@ int main(){
            continue;
         }
         if(command == "exit"){
-            break;
+            exit_shell();
         }
         if(command.length()>0 && ! isBlank(command))
         {  
@@ -130,12 +136,16 @@ int main(){
                 if(tokens[0] == builtin_commands[i]){
                      if(tokens[0]=="cd"){
                         handle_cd(tokens);
-                        continue;
                      }
+                     else if(tokens[0]=="clear"){
+                        system("clear");
+                        
+                     }
+                     
                 }
            }
+           execute(tokens);
              
-             execute(tokens);
 
            
 
