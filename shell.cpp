@@ -26,7 +26,7 @@ using namespace std;
 
 
 // create builtin commands
-vector<string> builtin_commands = {"cd", "clear", "history"};
+vector<string> builtin_commands = {"cd", "clear", "history", "pwd", "exit", "help"};
 
 // Function to read input from the user
 string read_input(){
@@ -138,7 +138,7 @@ void handle_history(vector<string>tokens){
    if(tokens[1]=="-c"){
        // clear history
          history.clear();
-         
+
    }else if(isNum(tokens[1])){
        int num= stoi(tokens[1]);
               
@@ -151,6 +151,14 @@ void handle_history(vector<string>tokens){
        }
    }
 
+}
+void handle_pwd(){
+    char store[1024];
+    if(getcwd(store, sizeof(store))!=NULL){
+        cout<<store<<endl;
+    }else{
+        perror("getcwd() error");
+    }
 }
 
 int main(){
@@ -172,9 +180,7 @@ int main(){
            cleanup();
            continue;
         }
-        if(command == "exit"){
-            exit_shell();
-        }
+
         if(command.length()>0 && ! isBlank(command))
         {  
           vector<string>tokens =  parse_input(command);
@@ -191,6 +197,11 @@ int main(){
                         
                      }else if(tokens[0]=="history"){
                         handle_history(tokens);
+                     }
+                     else if(tokens[0]=="exit"){
+                        exit_shell();
+                     }else if(tokens[0]=="pwd"){
+                        handle_pwd();
                      }
                      
                 }
