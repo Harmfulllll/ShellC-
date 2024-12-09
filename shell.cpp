@@ -22,7 +22,7 @@ using namespace std;
  volatile static sig_atomic_t sigint_flag = 0;
  static sigjmp_buf jmpbuf;
 
- vector<string>history(20);
+ vector<string>history;
 
 
 // create builtin commands
@@ -137,6 +137,8 @@ void handle_history(vector<string>tokens){
     }
    if(tokens[1]=="-c"){
        // clear history
+         history.clear();
+         
    }else if(isNum(tokens[1])){
        int num= stoi(tokens[1]);
               
