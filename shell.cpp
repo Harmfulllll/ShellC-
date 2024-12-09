@@ -22,9 +22,11 @@ using namespace std;
  volatile static sig_atomic_t sigint_flag = 0;
  static sigjmp_buf jmpbuf;
 
+ vector<string>history(20);
+
 
 // create builtin commands
-vector<string> builtin_commands = {"cd", "clear"};
+vector<string> builtin_commands = {"cd", "clear", "history"};
 
 // Function to read input from the user
 string read_input(){
@@ -106,6 +108,49 @@ void exit_shell(){
      std::cout << "Exiting shell..." << std::endl;
     exit(0);
 }
+void add_history(string command){
+   int curLength= history.size();
+   if(curLength>=20){
+    history.erase(history.begin());
+   }
+   history.push_back(command);
+}
+
+bool isNum(string str){
+    for(int i=0;i<str.length();i++){
+        if(!isdigit(str[i])){
+            return false;
+        }
+    }
+    return true;
+}
+
+void handle_history(vector<string>tokens){
+    if(history.size()==0){
+        cerr<<"history: no commands in history"<<endl;
+        return;
+    }
+    if(tokens.size()==1){
+        for(int i=0;i<history.size();i++){
+           cout<<i+1<<" "<<history[i]<<endl;
+       }  return;
+    }
+   if(tokens[1]=="-c"){
+       // clear history
+   }else if(isNum(tokens[1])){
+       int num= stoi(tokens[1]);
+              
+       if(num<0 || num>history.size()){
+           cerr<<"history: invalid argument"<<endl;
+       }else{
+          for(int i=history.size()-num;i<history.size();i++){
+              cout<<i+1<<" "<<history[i]<<endl;
+          }
+       }
+   }
+
+}
+
 int main(){
     // initialize
         
@@ -131,6 +176,8 @@ int main(){
         if(command.length()>0 && ! isBlank(command))
         {  
           vector<string>tokens =  parse_input(command);
+
+          add_history(command);
            
            for(int i=0;i<builtin_commands.size();i++ ){
                 if(tokens[0] == builtin_commands[i]){
@@ -140,6 +187,8 @@ int main(){
                      else if(tokens[0]=="clear"){
                         system("clear");
                         
+                     }else if(tokens[0]=="history"){
+                        handle_history(tokens);
                      }
                      
                 }
