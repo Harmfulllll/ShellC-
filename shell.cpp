@@ -161,6 +161,15 @@ void handle_pwd(){
     }
 }
 
+void handle_help(){
+    cout<<"cd <directory> : change directory"<<endl;
+    cout<<"clear : clear the screen"<<endl;
+    cout<<"history : display history of commands"<<endl;
+    cout<<"pwd : display current working directory"<<endl;
+    cout<<"exit : exit the shell"<<endl;
+    cout<<"help : display all the builtin commands"<<endl;
+}
+
 int main(){
     // initialize
         
@@ -190,18 +199,41 @@ int main(){
            for(int i=0;i<builtin_commands.size();i++ ){
                 if(tokens[0] == builtin_commands[i]){
                      if(tokens[0]=="cd"){
+                        if(tokens.size()>2){
+                            cerr<<"cd: too many arguments"<<endl;
+                            continue;
+                        }
                         handle_cd(tokens);
                      }
                      else if(tokens[0]=="clear"){
+                        if(tokens.size()>1){
+                            cerr<<"clear: too many arguments"<<endl;
+                            continue;
+                        }
                         system("clear");
                         
                      }else if(tokens[0]=="history"){
                         handle_history(tokens);
                      }
                      else if(tokens[0]=="exit"){
+                        if(tokens.size()>1){
+                            cerr<<"exit: too many arguments"<<endl;
+                            continue;
+                        }
                         exit_shell();
                      }else if(tokens[0]=="pwd"){
+                        if(tokens.size()>1){
+                            cerr<<"pwd: too many arguments"<<endl;
+                            continue;
+                        }
                         handle_pwd();
+                     }
+                     else if(tokens[0]=="help"){
+                        if(tokens.size()>1){
+                            cerr<<"help: too many arguments"<<endl;
+                            continue;
+                        }
+                        handle_help();
                      }
                      
                 }
