@@ -4,12 +4,7 @@
 #include<vector>
 #include<unistd.h>
 #include<signal.h>
-#ifdef _WIN32
-    #include <windows.h>
-#else
-    #include <sys/wait.h>
-#endif
-
+#include <sys/wait.h>
 #include<cerrno>
 #include<stdlib.h>
 #include<cstdlib>
@@ -38,7 +33,10 @@ string read_input(){
     return input;
 }
 
-void cleanup(){}
+void cleanup(){
+    cout<<"Cleaning up..."<<endl;
+    history.clear();
+}
 
 bool isBlank(string str){
     for(int i=0;i<str.length();i++){
@@ -63,7 +61,7 @@ vector<string>parse_input( string command){
 void handle_cd(vector<string>tokens){
     if(tokens[1].empty() || tokens.size()<2){
         cerr<<"cd: missing argument"<<endl;
-        exit(EXIT_FAILURE);
+        return;
     }else if(chdir(tokens[1].c_str())!=0){
         perror("cd");
     }
@@ -71,13 +69,12 @@ void handle_cd(vector<string>tokens){
         cout<<"Directory changed to "<<tokens[1]<<endl;
     }
 }
+
 void execute(vector<string>tokens){
     pid_t pid= fork();
     int start_loc;
     if(pid==0){
            // child process         
-         
-
          vector<char*>args;
          for(int i=0;i<tokens.size();i++){
             args.push_back(const_cast<char*>(tokens[i].c_str()));
@@ -98,12 +95,16 @@ void execute(vector<string>tokens){
         }while(!WIFEXITED(start_loc) && !WIFSIGNALED(start_loc));
      }
     }
-void handle_signal(int sigNUM){
+
+
+
+ void handle_signal(int sigNUM){
     if(!sigint_flag){
        return;
     }
     siglongjmp(jmpbuf, 10);
 }
+
 void exit_shell(){
      std::cout << "Exiting shell..." << std::endl;
     exit(0);
@@ -195,9 +196,10 @@ int main(){
           vector<string>tokens =  parse_input(command);
 
           add_history(command);
-           
+           bool is_builtin= false;
            for(int i=0;i<builtin_commands.size();i++ ){
                 if(tokens[0] == builtin_commands[i]){
+                    is_builtin= true;
                      if(tokens[0]=="cd"){
                         if(tokens.size()>2){
                             cerr<<"cd: too many arguments"<<endl;
@@ -238,7 +240,7 @@ int main(){
                      
                 }
            }
-           execute(tokens);
+         if(!is_builtin)  execute(tokens);
              
 
            
